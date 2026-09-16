@@ -1,0 +1,355 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2026-09-16T00:00:00.000Z",
+  "__export_source": "api-catalogo-filmes",
+  "resources": [
+    {
+      "_id": "wrk_catalogo_filmes",
+      "parentId": null,
+      "modified": 0,
+      "created": 0,
+      "name": "API Catálogo de Filmes",
+      "description": "Requisições para testar a API de filmes no Insomnia.",
+      "scope": "collection",
+      "_type": "workspace"
+    },
+    {
+      "_id": "env_catalogo_filmes_base",
+      "parentId": "wrk_catalogo_filmes",
+      "modified": 0,
+      "created": 0,
+      "name": "Base Environment",
+      "data": {
+        "base_url": "http://localhost:3000",
+        "api_key": "PIPOCADOCE123",
+        "filme_id": "1"
+      },
+      "dataPropertyOrder": null,
+      "color": null,
+      "isPrivate": false,
+      "metaSortKey": 0,
+      "_type": "environment"
+    },
+    {
+      "_id": "fld_middleware",
+      "parentId": "wrk_catalogo_filmes",
+      "modified": 0,
+      "created": 0,
+      "name": "01 - Middleware",
+      "description": "Testes de acesso sem chave, com chave errada e com chave correta.",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": 0,
+      "_type": "request_group"
+    },
+    {
+      "_id": "req_sem_chave",
+      "parentId": "fld_middleware",
+      "modified": 0,
+      "created": 0,
+      "name": "Público - GET geral sem x-api-key",
+      "description": "Esperado: HTTP 200. GET não exige autenticação.",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": 0,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "url": "{{ _.base_url }}/filmes",
+      "_type": "request"
+    },
+    {
+      "_id": "req_chave_errada",
+      "parentId": "fld_middleware",
+      "modified": 0,
+      "created": 0,
+      "name": "Público - GET com chave errada",
+      "description": "Esperado: HTTP 200. A chave é ignorada nas consultas GET.",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "x-api-key",
+          "value": "chave-errada"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": 1,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "url": "{{ _.base_url }}/filmes",
+      "_type": "request"
+    },
+    {
+      "_id": "req_chave_correta",
+      "parentId": "fld_middleware",
+      "modified": 0,
+      "created": 0,
+      "name": "Permitido - chave correta",
+      "description": "Esperado: HTTP 200.",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": 2,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "url": "{{ _.base_url }}/filmes",
+      "_type": "request"
+    },
+    {
+      "_id": "fld_crud",
+      "parentId": "wrk_catalogo_filmes",
+      "modified": 0,
+      "created": 0,
+      "name": "02 - CRUD de Filmes",
+      "description": "Execute o POST primeiro e atualize filme_id com o ID retornado.",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": 1,
+      "_type": "request_group"
+    },
+    {
+      "_id": "req_criar_filme",
+      "parentId": "fld_crud",
+      "modified": 0,
+      "created": 0,
+      "name": "POST - Cadastrar filme",
+      "description": "Cadastra um filme e retorna o ID.",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"titulo\": \"Interestelar\",\n  \"genero\": \"Ficção Científica\",\n  \"ano\": 2014,\n  \"diretor\": \"Christopher Nolan\",\n  \"descricao\": \"Um grupo de astronautas parte em busca de um novo lar para a humanidade.\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "x-api-key",
+          "value": "{{ _.api_key }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": 0,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "url": "{{ _.base_url }}/filmes",
+      "_type": "request"
+    },
+    {
+      "_id": "req_listar_filmes",
+      "parentId": "fld_crud",
+      "modified": 0,
+      "created": 0,
+      "name": "GET - Listar filmes",
+      "description": "Lista todos os filmes.",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": 1,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "url": "{{ _.base_url }}/filmes",
+      "_type": "request"
+    },
+    {
+      "_id": "req_buscar_filme",
+      "parentId": "fld_crud",
+      "modified": 0,
+      "created": 0,
+      "name": "GET - Buscar filme por ID",
+      "description": "Busca o ID definido no ambiente do Insomnia.",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "x-api-key",
+          "value": "{{ _.api_key }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": 2,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "url": "{{ _.base_url }}/filmes/{{ _.filme_id }}",
+      "_type": "request"
+    },
+    {
+      "_id": "req_editar_filme",
+      "parentId": "fld_crud",
+      "modified": 0,
+      "created": 0,
+      "name": "PATCH - Editar filme",
+      "description": "Edita o filme definido no ambiente do Insomnia.",
+      "method": "PATCH",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"titulo\": \"Interestelar - Atualizado\",\n  \"genero\": \"Ficção Científica\",\n  \"ano\": 2014,\n  \"diretor\": \"Christopher Nolan\",\n  \"descricao\": \"Descrição atualizada do filme.\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "x-api-key",
+          "value": "{{ _.api_key }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": 3,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "url": "{{ _.base_url }}/filmes/{{ _.filme_id }}",
+      "_type": "request"
+    },
+    {
+      "_id": "req_excluir_filme",
+      "parentId": "fld_crud",
+      "modified": 0,
+      "created": 0,
+      "name": "DELETE - Excluir filme",
+      "description": "Exclui o filme definido no ambiente do Insomnia.",
+      "method": "DELETE",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "x-api-key",
+          "value": "{{ _.api_key }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": 4,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "url": "{{ _.base_url }}/filmes/{{ _.filme_id }}",
+      "_type": "request"
+    },
+    {
+      "_id": "fld_upload",
+      "parentId": "wrk_catalogo_filmes",
+      "modified": 0,
+      "created": 0,
+      "name": "03 - Upload e Swagger",
+      "description": "Selecione manualmente uma imagem no campo imagem antes de enviar.",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": 2,
+      "_type": "request_group"
+    },
+    {
+      "_id": "req_upload_imagem",
+      "parentId": "fld_upload",
+      "modified": 0,
+      "created": 0,
+      "name": "POST - Upload de imagem",
+      "description": "Use uma imagem de até 5 MB no campo imagem.",
+      "method": "POST",
+      "body": {
+        "mimeType": "multipart/form-data",
+        "params": [
+          {
+            "id": "pair_upload_imagem",
+            "name": "imagem",
+            "type": "file",
+            "fileName": ""
+          }
+        ]
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "x-api-key",
+          "value": "{{ _.api_key }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": 0,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "url": "{{ _.base_url }}/upload",
+      "_type": "request"
+    },
+    {
+      "_id": "req_swagger",
+      "parentId": "fld_upload",
+      "modified": 0,
+      "created": 0,
+      "name": "GET - Swagger",
+      "description": "Abre a documentação da API.",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": 1,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "url": "{{ _.base_url }}/api-docs",
+      "_type": "request"
+    }
+  ]
+}

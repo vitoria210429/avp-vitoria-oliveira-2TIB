@@ -19,13 +19,21 @@ const uploadsDirectory = path.join(__dirname, "uploads");
 fs.mkdirSync(uploadsDirectory, { recursive: true });
 app.use(express.json());
 
-const filmes = [];
-let nextFilmId = 1;
+let filmes = [
+  { id: 1, titulo: "Interestelar", genero: "Ficção Científica", ano: 2014, diretor: "Christopher Nolan", descricao: "Um grupo de astronautas parte em busca de um novo lar para a humanidade." },
+  { id: 2, titulo: "O Poderoso Chefão", genero: "Drama", ano: 1972, diretor: "Francis Ford Coppola", descricao: "A história de uma família envolvida no comando de uma organização criminosa." },
+  { id: 3, titulo: "Cidade de Deus", genero: "Crime", ano: 2002, diretor: "Fernando Meirelles", descricao: "Dois jovens seguem caminhos diferentes em uma comunidade do Rio de Janeiro." }
+];
+let nextFilmId = 4;
 
 const requireApiKey = (req, res, next) => {
-  if (!API_KEY || req.header("x-api-key") !== API_KEY) {
+  const authorization = req.header("authorization");
+  const bearerToken = authorization?.startsWith("Bearer ") ? authorization.slice(7) : undefined;
+  const apiKey = req.header("x-api-key");
+
+  if (!API_KEY || (bearerToken !== API_KEY && apiKey !== API_KEY)) {
     return res.status(401).json({
-      mensagem: "Acesso negado. Envie uma chave x-api-key válida."
+      erro: "Acesso não autorizado. Envie Authorization: Bearer TOKEN_SECRET ou x-api-key válido."
     });
   }
 
@@ -40,7 +48,7 @@ const upload = multer({
       return callback(null, true);
     }
 
-    callback(new multer.MulterError("LIMIT_UNEXPECTED_FILE", "imagem"));
+    callback(new multer.MulterError("LIMIT_UNEXPECTED_FILE", UPLOAD_FIELD_NAME));
   }
 });
 
@@ -48,23 +56,29 @@ const getFilmId = (req) => Number(req.params.id);
 const isValidId = (id) => Number.isInteger(id) && id > 0;
 const filmFields = ["titulo", "genero", "ano", "diretor", "descricao"];
 
-const validateFilm = (body) => {
-  const missingFields = ["titulo", "genero", "ano", "diretor", "descricao"]
-    .filter((field) => body[field] === undefined || body[field] === "");
+const validateFilm = (body, partial = false) => {
+  const textFields = ["titulo", "genero", "diretor", "descricao"];
+  const fieldsToValidate = partial
+    ? textFields.filter((field) => body[field] !== undefined)
+    : textFields;
 
-  if (missingFields.length > 0) {
-    return `Campos obrigatórios: ${missingFields.join(", ")}.`;
+  for (const field of fieldsToValidate) {
+    if (typeof body[field] !== "string" || body[field].trim() === "") {
+      return `O campo ${field} deve ser um texto não vazio.`;
+    }
   }
 
-  if (!Number.isInteger(Number(body.ano)) || Number(body.ano) < 1888) {
-    return "O campo ano deve ser um número inteiro válido.";
+  if (!partial || body.ano !== undefined) {
+    if (!Number.isInteger(body.ano) || body.ano < 1888 || body.ano > new Date().getFullYear()) {
+      return "O campo ano deve ser um número inteiro entre 1888 e o ano atual.";
+    }
   }
 
   return null;
 };
 
-const pickFilmFields = (body) => Object.fromEntries(
-  filmFields.map((field) => [field, field === "ano" ? Number(body[field]) : body[field]])
+const normalizeFilm = (body) => Object.fromEntries(
+  filmFields.map((field) => [field, field === "ano" ? body[field] : body[field].trim()])
 );
 
 const swaggerOptions = {
@@ -78,7 +92,11 @@ const swaggerOptions = {
     servers: [{ url: `http://localhost:${PORT}` }],
     components: {
       securitySchemes: {
-        apiKey: { type: "apiKey", in: "header", name: "x-api-key" }
+        bearerAuth: {
+          type: "http",
+          scheme: "bearer",
+          description: "Informe o valor de TOKEN_SECRET. O header deve usar o formato Bearer TOKEN_SECRET."
+        }
       },
       schemas: {
         Filme: {
@@ -110,7 +128,7 @@ app.get("/", (req, res) => {
  * /filmes:
  *   post:
  *     summary: Cadastra um filme
- *     security: [{ apiKey: [] }]
+ *     security: [{ bearerAuth: [] }]
  *     requestBody:
  *       required: true
  *       content:
@@ -126,7 +144,7 @@ app.post("/filmes", requireApiKey, (req, res) => {
     return res.status(400).json({ mensagem: validationError });
   }
 
-  const filme = { id: nextFilmId++, ...pickFilmFields(req.body) };
+  const filme = { id: nextFilmId++, ...normalizeFilm(req.body) };
   filmes.push(filme);
   res.status(201).json({ mensagem: "Filme cadastrado com sucesso.", filme });
 });
@@ -173,7 +191,7 @@ app.get("/filmes/:id", (req, res) => {
  * /filmes/{id}:
  *   put:
  *     summary: Edita um filme pelo ID
- *     security: [{ apiKey: [] }]
+ *     security: [{ bearerAuth: [] }]
  *     parameters:
  *       - in: path
  *         name: id
@@ -189,7 +207,7 @@ app.get("/filmes/:id", (req, res) => {
  *       404: { description: Filme não encontrado }
  *   patch:
  *     summary: Atualiza parcialmente um filme pelo ID
- *     security: [{ apiKey: [] }]
+ *     security: [{ bearerAuth: [] }]
  *     parameters:
  *       - in: path
  *         name: id
@@ -206,19 +224,26 @@ app.get("/filmes/:id", (req, res) => {
  */
 const updateFilm = (req, res) => {
   const id = getFilmId(req);
-  const filmIndex = filmes.findIndex((item) => item.id === id);
+  const filme = filmes.find((item) => item.id === id);
 
-  if (!isValidId(id) || filmIndex === -1) {
+  if (!isValidId(id) || !filme) {
     return res.status(404).json({ mensagem: "Filme não encontrado." });
   }
 
-  const validationError = validateFilm(req.body);
+  const invalidFields = Object.keys(req.body)
+    .filter((field) => !filmFields.includes(field));
+  if (invalidFields.length > 0) {
+    return res.status(400).json({ mensagem: `Campos não permitidos: ${invalidFields.join(", ")}.` });
+  }
+
+  const updatedData = { ...filme, ...req.body };
+  const validationError = validateFilm(updatedData, true);
   if (validationError) {
     return res.status(400).json({ mensagem: validationError });
   }
 
-  filmes[filmIndex] = { id, ...pickFilmFields(req.body) };
-  res.json({ mensagem: "Filme atualizado com sucesso.", filme: filmes[filmIndex] });
+  Object.assign(filme, normalizeFilm(updatedData));
+  res.json({ mensagem: "Filme atualizado com sucesso.", filme });
 };
 
 app.put("/filmes/:id", requireApiKey, updateFilm);
@@ -229,7 +254,7 @@ app.patch("/filmes/:id", requireApiKey, updateFilm);
  * /filmes/{id}:
  *   delete:
  *     summary: Exclui um filme pelo ID
- *     security: [{ apiKey: [] }]
+ *     security: [{ bearerAuth: [] }]
  *     parameters:
  *       - in: path
  *         name: id
@@ -256,7 +281,7 @@ app.delete("/filmes/:id", requireApiKey, (req, res) => {
  * /upload:
  *   post:
  *     summary: Envia uma imagem de filme
- *     security: [{ apiKey: [] }]
+ *     security: [{ bearerAuth: [] }]
  *     requestBody:
  *       required: true
  *       content:
@@ -272,7 +297,7 @@ app.delete("/filmes/:id", requireApiKey, (req, res) => {
  */
 app.post("/upload", requireApiKey, upload.single(UPLOAD_FIELD_NAME), (req, res) => {
   if (!req.file) {
-    return res.status(400).json({ mensagem: "Envie uma imagem no campo imagem." });
+    return res.status(400).json({ mensagem: `Envie uma imagem no campo ${UPLOAD_FIELD_NAME}.` });
   }
 
   res.status(201).json({
@@ -282,6 +307,10 @@ app.post("/upload", requireApiKey, upload.single(UPLOAD_FIELD_NAME), (req, res) 
 });
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use((req, res) => {
+  res.status(404).json({ erro: "Rota não encontrada." });
+});
+
 app.use((error, req, res, next) => {
   if (error instanceof multer.MulterError) {
     const message = error.code === "LIMIT_FILE_SIZE"
@@ -294,8 +323,12 @@ app.use((error, req, res, next) => {
 });
 
 app.use((error, req, res, next) => {
+  if (error instanceof SyntaxError && error.status === 400 && "body" in error) {
+    return res.status(400).json({ erro: "JSON inválido." });
+  }
+
   console.error(error);
-  res.status(500).json({ mensagem: "Erro interno do servidor." });
+  res.status(500).json({ erro: "Erro interno do servidor." });
 });
 
 app.listen(PORT, () => {

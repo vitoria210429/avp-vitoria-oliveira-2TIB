@@ -22,7 +22,7 @@
       "name": "Base Environment",
       "data": {
         "base_url": "http://localhost:3000",
-        "api_key": "PIPOCADOCE123",
+        "token_secret": "PIPOCADOCE123",
         "filme_id": "1"
       },
       "dataPropertyOrder": null,
@@ -76,12 +76,7 @@
       "method": "GET",
       "body": {},
       "parameters": [],
-      "headers": [
-        {
-          "name": "x-api-key",
-          "value": "chave-errada"
-        }
-      ],
+      "headers": [],
       "authentication": {},
       "metaSortKey": 1,
       "isPrivate": false,
@@ -99,8 +94,8 @@
       "parentId": "fld_middleware",
       "modified": 0,
       "created": 0,
-      "name": "Permitido - chave correta",
-      "description": "Esperado: HTTP 200.",
+      "name": "Público - GET sem autenticação",
+      "description": "Esperado: HTTP 200. GET não exige autenticação.",
       "method": "GET",
       "body": {},
       "parameters": [],
@@ -148,8 +143,8 @@
           "value": "application/json"
         },
         {
-          "name": "x-api-key",
-          "value": "{{ _.api_key }}"
+          "name": "Authorization",
+          "value": "Bearer {{ _.token_secret }}"
         }
       ],
       "authentication": {},
@@ -197,12 +192,7 @@
       "method": "GET",
       "body": {},
       "parameters": [],
-      "headers": [
-        {
-          "name": "x-api-key",
-          "value": "{{ _.api_key }}"
-        }
-      ],
+      "headers": [],
       "authentication": {},
       "metaSortKey": 2,
       "isPrivate": false,
@@ -234,8 +224,8 @@
           "value": "application/json"
         },
         {
-          "name": "x-api-key",
-          "value": "{{ _.api_key }}"
+          "name": "Authorization",
+          "value": "Bearer {{ _.token_secret }}"
         }
       ],
       "authentication": {},
@@ -262,8 +252,8 @@
       "parameters": [],
       "headers": [
         {
-          "name": "x-api-key",
-          "value": "{{ _.api_key }}"
+          "name": "Authorization",
+          "value": "Bearer {{ _.token_secret }}"
         }
       ],
       "authentication": {},
@@ -312,8 +302,8 @@
       "parameters": [],
       "headers": [
         {
-          "name": "x-api-key",
-          "value": "{{ _.api_key }}"
+          "name": "Authorization",
+          "value": "Bearer {{ _.token_secret }}"
         }
       ],
       "authentication": {},

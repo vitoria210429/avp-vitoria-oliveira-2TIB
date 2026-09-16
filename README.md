@@ -1,6 +1,6 @@
 # API Catálogo de Filmes
 
-API REST em Node.js e Express para cadastrar e gerenciar filmes usando armazenamento em memória. O projeto inclui proteção por `x-api-key`, upload de imagens e documentação Swagger.
+API REST em Node.js e Express para cadastrar e gerenciar filmes usando armazenamento em memória. O projeto inclui proteção por Bearer Token, compatibilidade com `x-api-key`, upload de imagens e documentação Swagger.
 
 ## Tecnologias
 
@@ -23,24 +23,28 @@ A documentação Swagger estará em `http://localhost:3000/api-docs`.
 
 ## Configuração
 
-O projeto aceita `API_KEY` ou `TOKEN_SECRET` no arquivo `.env`. A configuração atual pode permanecer assim:
+O projeto utiliza `TOKEN_SECRET` no arquivo `.env`. A configuração atual pode permanecer assim:
 
 ```env
 DATABASE_URL=
 TOKEN_SECRET="PIPOCADOCE123"
+PORT=3000
+API_NAME="API Catálogo de Filmes"
+MAX_UPLOAD_SIZE_MB=5
+UPLOAD_FIELD_NAME=imagem
 ```
 
-Use `.env.example` como modelo alternativo. As rotas protegidas exigem o header com o mesmo valor configurado:
+Use `.env.example` como modelo alternativo. As rotas protegidas seguem o padrão do repositório de referência:
 
 ```text
-x-api-key: PIPOCADOCE123
+Authorization: Bearer PIPOCADOCE123
 ```
 
-Sem o header, ou usando uma chave incorreta, a API responde com `401`.
+O header `x-api-key: PIPOCADOCE123` também funciona para manter compatibilidade com a coleção anterior do Insomnia. Sem credencial ou usando uma incorreta, a API responde com `401`.
 
 ## Rotas
 
-As consultas `GET /filmes` e `GET /filmes/:id` são públicas. Cadastro, edição, exclusão e upload são protegidos por `x-api-key`.
+As consultas `GET /filmes` e `GET /filmes/:id` são públicas. Cadastro, edição, exclusão e upload são protegidos por Bearer Token.
 
 | Método | Rota | Descrição |
 | --- | --- | --- |
@@ -73,7 +77,7 @@ Os dados ficam em memória e são perdidos quando o servidor é encerrado. Cada 
 1. Execute `GET http://localhost:3000/filmes` sem header: deve retornar `200`.
 2. Execute `GET http://localhost:3000/filmes/:id` sem header: deve retornar `200` para um ID existente.
 3. Envie o JSON acima em `POST /filmes` sem header: deve retornar `401`.
-4. Repita o POST com `x-api-key: PIPOCADOCE123` e use o ID retornado para testar PATCH e DELETE.
+4. Repita o POST com `Authorization: Bearer PIPOCADOCE123` e use o ID retornado para testar PATCH e DELETE. O PATCH aceita somente os campos que serão alterados.
 5. Para upload, use `POST http://localhost:3000/upload`, o header correto e o corpo `Multipart Form` com o campo `imagem` configurado como arquivo.
 
 O upload aceita somente imagens e arquivos de até 5 MB. Os arquivos são salvos em `uploads/`, que não deve ser enviado ao Git.
